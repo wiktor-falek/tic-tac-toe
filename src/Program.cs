@@ -7,29 +7,65 @@ namespace TicTacToe
     {
         public static void Main()
         {
-            NewGame();
+            bool keepPlaying = true;
+            while (keepPlaying) {
+                NewGame();
+                WriteLine("Do you wish to restart? y/n");
+                if (!ReadLine().Equals("y")) {
+                    keepPlaying = false;
+                }
+            }
         }
         static void NewGame() {
             string[] board = NewBoard();
             string playerSymbol = ChoosePlayerSymbol();
+            string computerSymbol = playerSymbol == "x" ? "o" : "x";
             string gameStatus = CheckGameStatus(board);
+            Console.Clear();
+            PrintBoard(board);
             WriteLine($"Your symbol is: {playerSymbol}");
 
             while(gameStatus == "ongoing") {
-            PrintBoard(board);
-            PlayerInput(playerSymbol, board);
 
+                playerTurn(playerSymbol, board);
+                computerTurn(computerSymbol, board);
+
+                gameStatus = CheckGameStatus(board);
+
+                Console.Clear();
+                PrintBoard(board);
             }
-
-            WriteLine($"{gameStatus}");
-
-
+            WriteLine($"{gameStatus} won");
         }
 
-        static void PlayerInput(string playerSymbol, string[] board) {
-            WriteLine($"Choose position to place your symbol ({playerSymbol})");
-            string input = ReadLine();
+        static void playerTurn(string playerSymbol, string[] board) {
+            string[] validInputs = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+            string input = "wrong";
+
+            while (Array.IndexOf(validInputs, input) == -1) {
+                WriteLine("Select a number from 1-9 to place symbol on a square");
+                input = ReadLine();
+            }
+
+            int index = int.Parse(input) - 1;
+
+            // not my proudest moment but nothing else works
+            // just dont input taken position 100,000 times
+            if (board[index] != " ") {
+                playerTurn(playerSymbol, board);
+                return;
+            }
+            board[index] = playerSymbol;
+        }
+
+        static void computerTurn(string computerSymbol, string[] board) {
+            Random rand = new Random();
             
+            // get every index of board where board[index] == " "
+            int[] availableIndices = board.Select((b,i) => b == " " ? i : -1).Where(i => i != -1).ToArray();
+
+            int index = availableIndices[rand.Next(availableIndices.Length)];
+            board[index] = computerSymbol;
         }
 
         static string[] NewBoard()
@@ -41,11 +77,9 @@ namespace TicTacToe
         static void PrintBoard(string[] board)
         {
             string s = "";
-            for (int i = 0; i < board.Length; i++)
-            {
+            for (int i = 0; i < board.Length; i++) {
                 s += $"[{board[i]}] ";
-                if (i == 2 || i == 5) 
-                {
+                if (i == 2 || i == 5) {
                     s += "\n";
                 }
             }
@@ -54,7 +88,7 @@ namespace TicTacToe
 
         static string ChoosePlayerSymbol()
         {
-            Random rand = new Random(); // no clue where this belongs so i'll just leave it here
+            Random rand = new Random();
             return rand.NextDouble() >= 0.5 ? "x" : "o";
         }
 
@@ -63,8 +97,6 @@ namespace TicTacToe
             static bool BoardPositionComparer(int a, int b, int c, string[] board) {
                 // returns true if board indices a, b, c are equal and are either "x" or "y"
                 string[] playerSymbols = {"x", "o"};
-
-                WriteLine($"{board[a]} {board[b]} {board[c]}");
 
                 if (board[a] != " " && board[a] == board[b] && board[b] == board[c]) {
                     return true;
