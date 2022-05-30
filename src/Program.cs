@@ -26,7 +26,6 @@ namespace TicTacToe
             WriteLine($"Your symbol is: {playerSymbol}");
 
             while(gameStatus == "ongoing") {
-
                 playerTurn(playerSymbol, board);
                 computerTurn(computerSymbol, board);
 
@@ -48,9 +47,8 @@ namespace TicTacToe
             }
 
             int index = int.Parse(input) - 1;
-
-            // not my proudest moment but nothing else works
-            // just dont input taken position 100,000 times
+            
+            // if position is not available call function recursively to ask for input again
             if (board[index] != " ") {
                 playerTurn(playerSymbol, board);
                 return;
@@ -61,7 +59,7 @@ namespace TicTacToe
         static void computerTurn(string computerSymbol, string[] board) {
             Random rand = new Random();
             
-            // get every index of board where board[index] == " "
+            // get indices of board which equal " "
             int[] availableIndices = board.Select((b,i) => b == " " ? i : -1).Where(i => i != -1).ToArray();
 
             int index = availableIndices[rand.Next(availableIndices.Length)];
@@ -76,14 +74,14 @@ namespace TicTacToe
 
         static void PrintBoard(string[] board)
         {
-            string s = "";
+            string buffer = "";
             for (int i = 0; i < board.Length; i++) {
-                s += $"[{board[i]}] ";
+                buffer += $"[{board[i]}] ";
                 if (i == 2 || i == 5) {
-                    s += "\n";
+                    buffer += "\n";
                 }
             }
-            WriteLine(s);
+            WriteLine(buffer);
         }
 
         static string ChoosePlayerSymbol()
@@ -95,15 +93,13 @@ namespace TicTacToe
         static string CheckGameStatus(string[] board)
         {
             static bool BoardPositionComparer(int a, int b, int c, string[] board) {
-                // returns true if board indices a, b, c are equal and are either "x" or "y"
-                string[] playerSymbols = {"x", "o"};
-
+                // returns true if board indices a, b, c are equal and are not " "
                 if (board[a] != " " && board[a] == board[b] && board[b] == board[c]) {
                     return true;
                 }
                 return false;
             }
-
+            
             if(BoardPositionComparer(0, 1, 2, board)) {
                 return board[0];
             }
